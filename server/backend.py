@@ -2,6 +2,8 @@ from flask import Flask, request, redirect, jsonify, session
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
 from spotifylogic import SpotifyActions
+import pyautogui 
+import random
 
 app = Flask(__name__)
 
@@ -39,12 +41,23 @@ def search():
         return jsonify({"error": "Access token missing or expired"}), 400
 
     body = request.get_json()
-    query = body.get("query", "pop")
+    query = body.get("query" + "songs", "pop")
 
     sp = Spotify(auth=access_token)
     songs = getSongs(sp, query)
 
     return jsonify(songs)
+
+@app.route('/screenshot', methods=["POST"])
+def screenshot():
+    screenshot = pyautogui.screenshot()
+    randomInt = random.randint(1,10000)
+    try:
+        screenshot.save(f'screenshot{randomInt}.png')
+        return {"status_code":200, "message":"Save image"}
+    except:
+        return {"status_code":500, "message":"Server error"}
+
 
 def getSongs(sp, query, limit=10):
     results = sp.search(q=query, type='track', limit=limit)
