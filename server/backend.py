@@ -5,6 +5,11 @@ import sqlite3
 import cv2
 import base64
 import numpy as np
+from spotipy import Spotify
+from spotipy.oauth2 import SpotifyOAuth
+from spotifylogic import SpotifyActions
+import pyautogui 
+import random
 
 app = Flask(__name__)
 
@@ -19,18 +24,6 @@ conn = mysql.connector.connect(
     database='ListenTua'
 )
 db1 = conn.cursor()
-
-# Execute a query
-cursor.execute("SELECT * FROM mytable")
-
-# Fetch all rows
-rows = cursor.fetchall()
-
-for row in rows:
-    print(row)
-
-# Close the connection
-conn.close()
 
 @app.route("/register", methods=["POST"])
 def register():
@@ -107,12 +100,76 @@ def login():
     }
     return response, 200
 
+CLIENT_ID = '2486129522ca4ed8bf027362ebfd60b1'
+CLIENT_SECRET = '76bd17dcb73548d49f7a45c22ab03c96'
+REDIRECT_URI = 'http://127.0.0.1:5000/callback'
+
+app.secret_key = 'your_secret_key_here'
+
+sp_oauth = SpotifyOAuth(client_id=CLIENT_ID,
+                         client_secret=CLIENT_SECRET,
+                         redirect_uri=REDIRECT_URI,
+                         scope="user-read-private user-library-read")
+
+spotifyObj = SpotifyActions()
+
+@app.route('/')
+def index():
+    auth_url = sp_oauth.get_authorize_url()
+    return redirect(auth_url)
+
+@app.route('/callback')
+def callback():
+    code = request.args.get('code')
+    token_info = sp_oauth.get_access_token(code)
+    access_token = token_info['access_token']
+    session["access_token"] = access_token
+    spotifyObj.access_token = access_token
+    return access_token
+
+@app.route('/search', methods=["POST"])
+def search():
+    access_token = spotifyObj.access_token
+    if not access_token:
+        return jsonify({"error": "Access token missing or expired"}), 400
+
+    body = request.get_json()
+    query = body.get("query" + "songs", "pop")
+
+    sp = Spotify(auth=access_token)
+    songs = getSongs(sp, query)
+
+    return jsonify(songs)
+
+@app.route('/screenshot', methods=["POST"])
+def screenshot():
+    screenshot = pyautogui.screenshot()
+    randomInt = random.randint(1,10000)
+    try:
+        screenshot.save(f'screenshot{randomInt}.png')
+        return {"status_code":200, "message":"Save image"}
+    except:
+        return {"status_code":500, "message":"Server error"}
+
 @app.route("/screen", methods=["POST"])
 def submitScreen():
     requestBody = request.json()
     print(requestBody)
 
-    
 
-if __name__=="__main__":
+def getSongs(sp, query, limit=10):
+    results = sp.search(q=query, type='track', limit=limit)
+    songs = []
+    for item in results['tracks']['items']:
+        song = {
+            'name': item['name'],
+            'artist': item['artists'][0]['name'],
+            'album': item['album']['name'],
+            'release_date': item['album']['release_date'],
+            'uri': item['uri']
+        }
+        songs.append(song)
+    return songs
+
+if __name__ == "__main__":
     app.run(debug=True)
