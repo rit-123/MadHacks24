@@ -10,8 +10,10 @@ from spotipy.oauth2 import SpotifyOAuth
 from spotifylogic import SpotifyActions
 import pyautogui 
 import random
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # Connect Database
 import mysql.connector
@@ -70,35 +72,36 @@ def register():
 
 @app.route("/login", methods=["POST"])
 def login():
-
+    body = request.get_json()
+    print(body.get("username"))
     # Ensure username was sumbitted
-    if not request.form.get("username"):
+    if not body.get("username"):
         response = {
             "message": "Username is required"
         }
         return response, 400
 
     # Ensure password was submitted
-    elif not request.form.get("password"):
+    elif not body.get("password"):
         response = {
             "message": "password is required"
         }
         return response, 400
 
     # Query database for username
-    db1.execute("SELECT * FROM users WHERE username = ?", [request.form.get("username")])
+    db1.execute("SELECT * FROM users WHERE username = %s", [body.get("username")])
     # Ensure username exists and password is correct
     rows = db1.fetchall()
     for row in rows:
-        if not row[0] or not check_password_hash(row[1], request.form.get("password")):
-             response = {
+        if not row[0] or not check_password_hash(row[1], body.get("password")):
+            response = {
                 "message": "Invalid username or password"
             }
-        return response, 403
+            return response, 403
     # Remember which user has logged in
     response ={
         "message" : "Successfully Logged In",
-        "username" : request.form.get("username")
+        "username" : body.get("username")
     }
     return response, 200
 

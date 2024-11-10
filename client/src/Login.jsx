@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 
-const LoginPage = () => {
+
+const LoginPage = ({ setUsername }) => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
         password: ''
@@ -25,10 +29,13 @@ const LoginPage = () => {
                 "username": username,
                 "password": password
             }
-            response = await axios.post('http://localhost:5000/login',data)
+            let response = await axios.post('http://localhost:5000/login',data)
             alert('Login successful!');
+            localStorage.setItem('username', username);
+            setUsername(username);
+            navigate('/listen');
         } catch (error) {
-            alert('Login failed!');
+            alert('Login failed! '+ error);
         }
     };
 
@@ -76,9 +83,9 @@ const LoginPage = () => {
                     </form>
 
                     <div className="mt-8 text-center">
-                        <a href="#" className="text-cyan-300 hover:text-cyan-200 transition-colors text-lg">
-                            Forgot Password?
-                        </a>
+                        <Link to="/register" className="text-cyan-300 hover:text-cyan-200 transition-colors text-lg">
+                            New user? Register here
+                        </Link>
                     </div>
                 </div>
             </div>
