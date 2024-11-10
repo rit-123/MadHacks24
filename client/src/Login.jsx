@@ -33,7 +33,7 @@ const LoginPage = ({ setUsername }) => {
             alert('Login successful!');
             localStorage.setItem('username', username);
             setUsername(username);
-            navigate('/listen');
+            navigate('/connectSpotify');
         } catch (error) {
             alert('Login failed! '+ error);
         }

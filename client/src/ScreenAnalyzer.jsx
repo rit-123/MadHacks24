@@ -1,32 +1,37 @@
 import React, { useState, useEffect } from 'react';
 
-const ScreenAnalyzer = () => {
-    const [stream, setStream] = useState(null);
+const ScreenAnalyzer = ({ setSpinning }) => {
+    // ADDED: New state variables for camera stream and status
+    const [screenStream, setScreenStream] = useState(null);
+    const [cameraStream, setCameraStream] = useState(null);
     const [isCapturing, setIsCapturing] = useState(false);
     const [lastProcessed, setLastProcessed] = useState(null);
     const [error, setError] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [status, setStatus] = useState('idle'); // 'idle', 'requesting', 'active', 'error'
 
-    const processAndSendFrame = async (canvas) => {
+    const processAndSendFrame = async (screenCanvas, cameraCanvas) => {
         try {
             setIsProcessing(true);
-            const base64Data = canvas.toDataURL('image/jpeg', 0.8);
+            // MODIFIED: Now includes both screen and camera data
+            const screenData = screenCanvas.toDataURL('image/jpeg', 0.8);
+            const cameraData = cameraCanvas ? cameraCanvas.toDataURL('image/jpeg', 0.8) : null;
 
             const payload = {
                 timestamp: new Date().toISOString(),
-                imageData: base64Data,
-                screenWidth: canvas.width,
-                screenHeight: canvas.height
+                screenImageData: screenData,
+                cameraImageData: cameraData, // ADDED: Camera data in payload
+                screenWidth: screenCanvas.width,
+                screenHeight: screenCanvas.height
             };
-            console.log(base64Data);
+
             const response = await fetch('http://localhost:5000/screenshot', {
                 method: 'POST',
                 body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
-                throw new Error('Failed to process screen data');
+                throw new Error('Failed to process screen and camera data');
             }
 
             const result = await response.json();
@@ -37,11 +42,25 @@ const ScreenAnalyzer = () => {
             setStatus('active');
 
         } catch (err) {
-            console.error('Error processing screen:', err);
-            setError('Failed to process screen data. Please try again.');
+            console.error('Error processing data:', err);
+            setError('Failed to process data. Please try again.');
             setStatus('error');
         } finally {
             setIsProcessing(false);
+        }
+    };
+
+    // ADDED: New function to start camera capture
+    const startCamera = async () => {
+        try {
+            const mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: false
+            });
+            setCameraStream(mediaStream);
+        } catch (err) {
+            console.error('Error accessing camera:', err);
+            setError('Camera permission denied. Please try again.');
         }
     };
 
@@ -50,32 +69,48 @@ const ScreenAnalyzer = () => {
             setError(null);
             setStatus('requesting');
 
-            const mediaStream = await navigator.mediaDevices.getDisplayMedia({
+            // MODIFIED: Now starts both screen and camera capture
+            const screenMediaStream = await navigator.mediaDevices.getDisplayMedia({
                 video: {
                     cursor: 'never'
                 },
                 audio: false
             });
 
-            setStream(mediaStream);
+            await startCamera(); // ADDED: Start camera capture
+
+            setScreenStream(screenMediaStream);
             setIsCapturing(true);
             setStatus('active');
 
-            mediaStream.getVideoTracks()[0].addEventListener('ended', () => {
+            screenMediaStream.getVideoTracks()[0].addEventListener('ended', () => {
                 stopCapture();
             });
         } catch (err) {
-            console.error('Error accessing screen:', err);
-            setError('Permission denied or screen share cancelled. Please try again.');
+            console.error('Error accessing screen or camera:', err);
+            setError('Permission denied or capture cancelled. Please try again.');
             setStatus('error');
             setIsCapturing(false);
         }
     };
 
+    useEffect(() => {
+        if (isCapturing) {
+            setSpinning(true);
+        } else {
+            setSpinning(false);
+        }
+    }, [isCapturing]);
+
     const stopCapture = () => {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            setStream(null);
+        // MODIFIED: Stop both screen and camera streams
+        if (screenStream) {
+            screenStream.getTracks().forEach(track => track.stop());
+            setScreenStream(null);
+        }
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            setCameraStream(null);
         }
         setIsCapturing(false);
         setLastProcessed(null);
@@ -85,26 +120,47 @@ const ScreenAnalyzer = () => {
     useEffect(() => {
         let intervalId;
 
-        if (isCapturing && stream) {
+        if (isCapturing && screenStream) {
             intervalId = setInterval(() => {
-                const video = document.createElement('video');
-                video.srcObject = stream;
+                // MODIFIED: Process both screen and camera frames
+                const screenVideo = document.createElement('video');
+                screenVideo.srcObject = screenStream;
 
-                video.onloadedmetadata = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
+                screenVideo.onloadedmetadata = () => {
+                    const screenCanvas = document.createElement('canvas');
+                    screenCanvas.width = screenVideo.videoWidth;
+                    screenCanvas.height = screenVideo.videoHeight;
 
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(video, 0, 0);
+                    const screenCtx = screenCanvas.getContext('2d');
+                    screenCtx.drawImage(screenVideo, 0, 0);
 
-                    processAndSendFrame(canvas);
+                    // ADDED: Process camera frame if available
+                    if (cameraStream) {
+                        const cameraVideo = document.createElement('video');
+                        cameraVideo.srcObject = cameraStream;
+                        cameraVideo.onloadedmetadata = () => {
+                            const cameraCanvas = document.createElement('canvas');
+                            cameraCanvas.width = cameraVideo.videoWidth;
+                            cameraCanvas.height = cameraVideo.videoHeight;
 
-                    video.remove();
-                    canvas.remove();
+                            const cameraCtx = cameraCanvas.getContext('2d');
+                            cameraCtx.drawImage(cameraVideo, 0, 0);
+
+                            processAndSendFrame(screenCanvas, cameraCanvas);
+
+                            cameraVideo.remove();
+                            cameraCanvas.remove();
+                        };
+                        cameraVideo.play();
+                    } else {
+                        processAndSendFrame(screenCanvas, null);
+                    }
+
+                    screenVideo.remove();
+                    screenCanvas.remove();
                 };
 
-                video.play();
+                screenVideo.play();
             }, 15000);
         }
 
@@ -113,7 +169,7 @@ const ScreenAnalyzer = () => {
                 clearInterval(intervalId);
             }
         };
-    }, [isCapturing, stream]);
+    }, [isCapturing, screenStream, cameraStream]); // MODIFIED: Added cameraStream dependency
 
     return (
         <button

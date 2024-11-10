@@ -3,6 +3,7 @@ import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider, N
 import MainPage from './MainPage'
 import LoginPage from './Login'
 import RegisterPage from './RegisterPage'
+import SpotifyConnector from './SpotifyConnector'
 
 const App = () => {
     const [username, setUsername] = useState(() => {
@@ -20,6 +21,7 @@ const App = () => {
                 username ?
                     <>
                         <Route index element={<Navigate to="/listen" replace />} />
+                        <Route path="/connectSpotify" element={<SpotifyConnector/>} />
                         <Route path="/listen" element={<MainPage username={username} setUsername={setUsername} />} />
                         <Route path="/*" element={<MainPage username={username} setUsername={setUsername} />} />
                     </> :
