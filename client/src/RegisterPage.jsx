@@ -1,4 +1,6 @@
+import axios from 'axios';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -6,6 +8,8 @@ const RegisterPage = () => {
     password: '',
     confirmPassword: ''
   });
+
+  const navigate = useNavigate();
 
   const [error, setError] = useState('');
 
@@ -39,14 +43,16 @@ const RegisterPage = () => {
 
     try {
       // Placeholder for API call
-      console.log('Registering with:', {
-        username: formData.username,
-        password: formData.password
-      });
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      alert('Registration successful!');
+      const data = {
+        "username": formData.username,
+        "password": formData.password
+      }
+      try{
+        axios.post('http://localhost:5000/register', data);
+        alert('Registration successful!');
+      } catch (error) {
+        alert('Registration failed! ' + error);
+      }
       
       // Clear form
       setFormData({
@@ -54,10 +60,14 @@ const RegisterPage = () => {
         password: '',
         confirmPassword: ''
       });
+
+      navigate('/');
     } catch (error) {
       setError('Registration failed. Please try again.');
     }
   };
+
+  
 
   return (
     <div className="w-full min-h-screen bg-black flex items-center justify-center">
