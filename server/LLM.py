@@ -10,14 +10,11 @@ def classify_screenshot(image):
     # Spotify-friendly mood labels that match with activities
     activities = [
         "focus music for studying",
-        "instrumental concentration",
         "gaming music playlist",
         "chill relaxing beats",
-        "upbeat social music",
-        "coding focus music",
+        "social music",
         "ambient background music",
         "peaceful reading music",
-        "study beats"
     ]
     
     # Load and process image
