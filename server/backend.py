@@ -110,6 +110,7 @@ def index():
 
 @app.route('/callback')
 def callback():
+    print("hit callback")
     code = request.args.get('code')
     token_info = sp_oauth.get_access_token(code)
     access_token = token_info['access_token']
@@ -124,7 +125,9 @@ def screenshot():
         base64_string = data['screenImageData'].split(',')[1]  # Remove data URL prefix
         image_data = base64.b64decode(base64_string)
         image = Image.open(io.BytesIO(image_data))
-        mood = llm.classify(image,"happy")[0][0]
+        mood, conf = llm.classify(image,"happy")[0]
+        print("conf is ", conf)
+        if conf<15:mood="lo fi beats"
         print(f"the mood is {mood}")
         search(mood)
         return {"status_code":200, "message":""}

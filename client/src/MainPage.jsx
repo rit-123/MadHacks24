@@ -1,29 +1,24 @@
 import React from 'react';
 import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
-import { useEffect } from 'react';
 import VoiceCommandListener from './voiceCommand';
 import ScreenCapture from './ScreenAnalyzer';
 import SpotifyConnector from './SpotifyConnector';
 import ScreenAnalyzer from './ScreenAnalyzer';
 import { useState, useEffect } from 'react';
-import { useSearchParams  } from 'react-router-dom';
-import axios from 'axios';
 
 
 const GlowingCirclePattern = () => {
     const blocks = [];
     const totalBlocks = 24;
-    const radius = 220;
-    const [searchParams] = useSearchParams();
-    
+    const radius = 220;    
 
     const [spinning, setSpinning] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
     try {
         const key = searchParams.get('code');
         try {
-            axios.post('http://localhost:5000/spotify', {code: key});
+            axios.get('http://localhost:5000/callback', {code: key});
         } catch (error) {
             console.log(error);
         }

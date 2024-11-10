@@ -18,57 +18,38 @@ class ImageMoodClassifier:
         self.mood_mappings = {
             'positive': {
                 'moods': ['happy', 'surprise', 'energetic'],
-                'adjectives': ['uplifting', 'positive', 'energizing', 'motivating', 'inspiring']
+                'adjectives': ['uplifting']
             },
             'calming': {
                 'moods': ['sad', 'disgust', 'neutral', 'fear', 'angry'],
-                'adjectives': ['calm', 'peaceful', 'quiet', 'tranquil', 'gentle']
+                'adjectives': ['calm']
             }
         }
         
         # Base activities without adjectives
         self.base_activities = [
             # Study/Focus
-            "music for studying",
-            "music for concentration",
-            "music for productive work",
-            "music for academic focus",
-            "music for mental clarity",
+            "music for coding",
+
             
             # Gaming
             "gaming music",
-            "gaming soundtrack",
-            "gaming battle music",
-            "electronic gaming mix",
-            "adventure gaming music",
-            
+
             # Chill/Relax
             "lofi beats",
-            "ambient music",
-            "nature sounds with music",
-            "meditation soundtrack",
-            "acoustic relaxation",
+
             
             # Social
             "party music",
-            "tropical house music",
-            "pop music for gatherings",
-            "dance music playlist",
-            "social party mix",
+
             
             # Ambient
             "ambient soundscape",
-            "atmospheric background",
-            "meditation music",
-            "space ambient sounds",
-            "ambient drone music",
+
             
             # Reading
             "music for reading",
-            "instrumental reading music",
-            "reading soundtrack",
-            "piano music for books",
-            "reading atmosphere"
+
         ]
         
         try:
