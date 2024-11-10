@@ -1,13 +1,10 @@
 from flask import Flask, render_template, request, jsonify, flash, redirect
 from werkzeug.security import check_password_hash, generate_password_hash
-import sqlite3
-import cv2
 import base64
 import numpy as np
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
 from spotifylogic import SpotifyActions
-import pyautogui 
 import random
 from LLM import ImageMoodClassifier
 from flask_cors import CORS
