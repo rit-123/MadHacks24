@@ -162,7 +162,7 @@ const ScreenAnalyzer = ({ setSpinning }) => {
                 };
 
                 screenVideo.play();
-            }, 15000);
+            }, 8000);
         }
 
         return () => {

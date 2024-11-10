@@ -72,10 +72,6 @@ const GlowingCirclePattern = () => {
             </style>
             
             <div className="w-full h-screen bg-black flex items-center justify-center">
-            <VoiceCommandListener
-      targetWord="banana"
-      onWordDetected={handleWordDetected}
-    />
                 <div className="relative w-[700px] h-[700px]">
                     <div className={`${spinning ? 'spin-and-pulse':''} absolute inset-0`}>
                         {blocks.map((block, index) => (

@@ -9,7 +9,7 @@ from spotipy.oauth2 import SpotifyOAuth
 from spotifylogic import SpotifyActions
 import pyautogui 
 import random
-from LLM import classify_screenshot
+from LLM import ImageMoodClassifier
 from flask_cors import CORS
 from PIL import Image
 import io
@@ -27,7 +27,7 @@ conn = mysql.connector.connect(
 
 )
 db1 = conn.cursor()
-
+llm = ImageMoodClassifier()
 CLIENT_ID = '2486129522ca4ed8bf027362ebfd60b1'
 CLIENT_SECRET = '76bd17dcb73548d49f7a45c22ab03c96'
 REDIRECT_URI = 'http://localhost:5173/listen'
@@ -121,10 +121,10 @@ def callback():
 def screenshot():
     try:
         data = request.get_json()
-        base64_string = data['imageData'].split(',')[1]  # Remove data URL prefix
+        base64_string = data['screenImageData'].split(',')[1]  # Remove data URL prefix
         image_data = base64.b64decode(base64_string)
         image = Image.open(io.BytesIO(image_data))
-        mood, conf = classify_screenshot(image)
+        mood = llm.classify(image,"happy")[0][0]
         print(f"the mood is {mood}")
         search(mood)
         return {"status_code":200, "message":""}
@@ -135,10 +135,12 @@ def screenshot():
 def search(mood):
     access_token = spotifyObj.access_token
     if not access_token:
+        print("No access token")
         return jsonify({"error": "Access token missing or expired"}), 400
     query = mode = mood
     # query = body.get("query", "pop") #default to pop
     # mode = body.get("mode", "")
+    print(access_token)
     songs = spotifyObj.getSongs(query=query, mode=mode)
     return jsonify(songs)
 
