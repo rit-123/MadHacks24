@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, jsonify, flash, redirect
-from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 import cv2
@@ -10,6 +9,7 @@ from spotipy.oauth2 import SpotifyOAuth
 from spotifylogic import SpotifyActions
 import pyautogui 
 import random
+from LLM import classify_screenshot
 
 app = Flask(__name__)
 
@@ -55,9 +55,6 @@ def register():
             return jsonify({"message": "Username already exists"}), 409
         # Hash the password
         hashed_password = generate_password_hash(body.get("password"))
-
-        print("Username:", body.get("username"))
-        print("Hashed Password:", hashed_password)
         # Insert the new user
         db1.execute(f"INSERT INTO users values (%s,%s)", (body.get("password"), hashed_password))
         conn.commit()
@@ -116,26 +113,28 @@ def callback():
     spotifyObj.setToken(access_token)
     return access_token #need to return another redirect URL here maybe?
 
-@app.route('/search', methods=["POST"])
-def search():
+
+@app.route('/screenshot', methods=["GET"])
+def screenshot():
+    screenshot = pyautogui.screenshot()
+    try:
+        mood, conf = classify_screenshot(screenshot)
+        print(f"the mood is {mood}")
+        search(mood)
+        return {"status_code":200, "message":""}
+    except Exception as e:
+        print(e)
+        return {"status_code":500, "message":"Server error"}
+    
+def search(mood):
     access_token = spotifyObj.access_token
     if not access_token:
         return jsonify({"error": "Access token missing or expired"}), 400
-    body = request.get_json()
-    query = body.get("query", "pop") #default to pop
-    mode = body.get("mode", "")
+    query = mode = mood
+    # query = body.get("query", "pop") #default to pop
+    # mode = body.get("mode", "")
     songs = spotifyObj.getSongs(query=query, mode=mode)
     return jsonify(songs)
-
-@app.route('/screenshot', methods=["POST"])
-def screenshot():
-    screenshot = pyautogui.screenshot()
-    randomInt = random.randint(1,10000)
-    try:
-        screenshot.save(f'screenshot{randomInt}.png')
-        return {"status_code":200, "message":"Save image"}
-    except:
-        return {"status_code":500, "message":"Server error"}
 
 @app.route("/screen", methods=["POST"])
 def submitScreen():
