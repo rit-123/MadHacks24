@@ -24,6 +24,10 @@ const GlowingCirclePattern = () => {
         }
     } catch (error) {}
 
+    useEffect(() => {
+        
+    }, [searchParams]);
+
     for (let i = 0; i < totalBlocks; i++) {
         const angle = (i / totalBlocks) * Math.PI * 2;
         const x = Math.cos(angle) * radius;

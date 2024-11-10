@@ -13,6 +13,7 @@ from LLM import ImageMoodClassifier
 from flask_cors import CORS
 from PIL import Image
 import io
+from emotionanalysis2 import predict_emotion
 app = Flask(__name__)
 CORS(app)
 # Connect Database
@@ -125,7 +126,12 @@ def screenshot():
         base64_string = data['screenImageData'].split(',')[1]  # Remove data URL prefix
         image_data = base64.b64decode(base64_string)
         image = Image.open(io.BytesIO(image_data))
-        mood, conf = llm.classify(image,"happy")[0]
+
+        face64 = data['cameraImageData'].split(',')[1]
+        fimdata = base64.b64decode(face64)
+        im2 = Image.open(io.BytesIO(fimdata))
+        thingy = predict_emotion(im2)
+        mood, conf = llm.classify(image,thingy)[0]
         print("conf is ", conf)
         if conf<15:mood="lo fi beats"
         print(f"the mood is {mood}")
