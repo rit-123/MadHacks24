@@ -1,7 +1,8 @@
 import React from 'react';
 import axios from 'axios';
-import ScreenCapture from './ScreenAnalyzer';
+import SpotifyConnector from './SpotifyConnector';
 import ScreenAnalyzer from './ScreenAnalyzer';
+import StartButton from './StartButton';
 
 const GlowingCirclePattern = () => {
     const blocks = [];
@@ -23,17 +24,7 @@ const GlowingCirclePattern = () => {
         });
     }
 
-    const handleSpotifyConnect = async () => {
-        try {
-            const response = await axios.get('http://localhost:5000/connect_spotify');
-            const url = response.data.url
-            console.log(url);
-
-            window.open(url, '_blank');
-        } catch (error) {
-            console.log(error);
-        }
-    }
+   
 
     return (
         <>
@@ -96,35 +87,16 @@ const GlowingCirclePattern = () => {
                             }}
                         >
                             <div style={{marginTop:"100px"}}>
-                                <div className="text-white font-black mb-3">LISTEN</div>
-                                <div className="text-white font-black mb-32">TUAH</div>
-                            
-                            <button
-                                className="px-6 py-1.5 text-white bg-black border-2 border-white rounded-lg
-                           transition-transform duration-300 hover:scale-105"
-                                style={{
-                                    fontFamily: 'Arial Black, sans-serif',
-                                    letterSpacing: '0.05em',
-                                    textShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
-                                    boxShadow: `0 0 15px rgba(255, 255, 255, 0.5),
-                             0 0 25px rgba(135, 206, 250, 0.8)`,
-                                    fontSize: '18px',
-                                    position: 'relative',
-                                    background: 'black',
-                                    border: '2px solid white',
-                                    marginBottom: "100px"
-                                }}
-                            >
-                                START
-                            </button>
+                                <div className="text-white font-black mb-3">LISTEN TUAH</div>
+                        
+                                <ScreenAnalyzer />
                             </div>
                         </div>
                     </div>
                 </div>
-                <button onClick={handleSpotifyConnect}>
-                    Connect Spotify
-                </button>
-                <ScreenAnalyzer />
+                
+                <SpotifyConnector />
+                
             </div>
         </>
     );
