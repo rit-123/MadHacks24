@@ -1,5 +1,7 @@
 import React from 'react';
 import axios from 'axios';
+import ScreenCapture from './ScreenAnalyzer';
+import ScreenAnalyzer from './ScreenAnalyzer';
 
 const GlowingCirclePattern = () => {
     const blocks = [];
@@ -122,6 +124,7 @@ const GlowingCirclePattern = () => {
                 <button onClick={handleSpotifyConnect}>
                     Connect Spotify
                 </button>
+                <ScreenAnalyzer />
             </div>
         </>
     );
