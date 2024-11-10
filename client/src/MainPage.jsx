@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 
 const GlowingCirclePattern = () => {
     const blocks = [];
@@ -22,9 +23,11 @@ const GlowingCirclePattern = () => {
 
     const handleSpotifyConnect = async () => {
         try {
-            const response = await fetch('http://localhost:5000/connect_spotify');
-            const data = await response.json();
-            console.log(data);
+            const response = await axios.get('http://localhost:5000/connect_spotify');
+            const url = response.data.url
+            console.log(url);
+
+            window.open(url, '_blank');
         } catch (error) {
             console.log(error);
         }

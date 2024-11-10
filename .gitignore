@@ -1,0 +1,40 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.cache
+*.pyc
+
+# Virtual environment
+myenv/
+venv/
+ENV/
+
+# Vite build files
+.vite/
+dist/
+node_modules/
+
+# Media and screenshots
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

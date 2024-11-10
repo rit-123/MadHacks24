@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, jsonify, flash, redirect
-from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 import cv2
@@ -10,11 +9,10 @@ from spotipy.oauth2 import SpotifyOAuth
 from spotifylogic import SpotifyActions
 import pyautogui 
 import random
+from LLM import classify_screenshot
 from flask_cors import CORS
-
 app = Flask(__name__)
 CORS(app)
-
 # Connect Database
 import mysql.connector
 
@@ -30,7 +28,7 @@ db1 = conn.cursor()
 
 CLIENT_ID = '2486129522ca4ed8bf027362ebfd60b1'
 CLIENT_SECRET = '76bd17dcb73548d49f7a45c22ab03c96'
-REDIRECT_URI = 'http://127.0.0.1:5000/callback'
+REDIRECT_URI = 'http://127.0.0.1:5173/listen'
 
 app.secret_key = 'your_secret_key_here'
 
@@ -57,9 +55,6 @@ def register():
             return jsonify({"message": "Username already exists"}), 409
         # Hash the password
         hashed_password = generate_password_hash(body.get("password"))
-
-        print("Username:", body.get("username"))
-        print("Hashed Password:", hashed_password)
         # Insert the new user
         db1.execute(f"INSERT INTO users values (%s,%s)", (body.get("password"), hashed_password))
         conn.commit()
@@ -106,10 +101,10 @@ def login():
     return response, 200
 
 
-@app.route('/')
+@app.route('/connect_spotify')
 def index():
     auth_url = sp_oauth.get_authorize_url()
-    return redirect(auth_url)
+    return {"url":auth_url}, 200
 
 @app.route('/callback')
 def callback():
@@ -119,26 +114,28 @@ def callback():
     spotifyObj.setToken(access_token)
     return access_token #need to return another redirect URL here maybe?
 
-@app.route('/search', methods=["POST"])
-def search():
+
+@app.route('/screenshot', methods=["GET"])
+def screenshot():
+    screenshot = pyautogui.screenshot()
+    try:
+        mood, conf = classify_screenshot(screenshot)
+        print(f"the mood is {mood}")
+        search(mood)
+        return {"status_code":200, "message":""}
+    except Exception as e:
+        print(e)
+        return {"status_code":500, "message":"Server error"}
+    
+def search(mood):
     access_token = spotifyObj.access_token
     if not access_token:
         return jsonify({"error": "Access token missing or expired"}), 400
-    body = request.get_json()
-    query = body.get("query", "pop") #default to pop
-    mode = body.get("mode", "")
+    query = mode = mood
+    # query = body.get("query", "pop") #default to pop
+    # mode = body.get("mode", "")
     songs = spotifyObj.getSongs(query=query, mode=mode)
     return jsonify(songs)
-
-@app.route('/screenshot', methods=["POST"])
-def screenshot():
-    screenshot = pyautogui.screenshot()
-    randomInt = random.randint(1,10000)
-    try:
-        screenshot.save(f'screenshot{randomInt}.png')
-        return {"status_code":200, "message":"Save image"}
-    except:
-        return {"status_code":500, "message":"Server error"}
 
 @app.route("/screen", methods=["POST"])
 def submitScreen():
