@@ -142,9 +142,15 @@ def submitScreen():
     requestBody = request.json()
     print(requestBody)
 
-@app.route("/playnext", methods = [""])
-def playSong(sp):
-    pass
+@app.route("/pause", methods = ["GET"])
+def playSong():
+    try:
+        spotifyObj.pauseSong()
+        return {"message": "pass"}, 200
+    except Exception as e:
+        print(e)
+        return {"message":"some fail"}, 400
+    
 
 if __name__ == "__main__":
     app.run(debug=True)

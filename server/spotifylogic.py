@@ -44,3 +44,6 @@ class SpotifyActions:
     def isPlaying(self):
         currState = self.querier.current_playback()
         return currState and currState["is_playing"]
+    
+    def pauseSong(self):
+        self.querier.pause_playback()
