@@ -85,15 +85,15 @@ def predict_emotion(image):
     return emotion_labels[emotion_idx], confidence
 
 
-# Load a sample image
-image_path = "test.jpg"
-image = Image.open(image_path)
+# # Load a sample image
+# image_path = "test.jpg"
+# image = Image.open(image_path)
 
-# Predict emotion
-result = predict_emotion(image)
+# # Predict emotion
+# result = predict_emotion(image)
 
-if result:
-    emotion_label, confidence = result
-    print(f"Emotion: {emotion_label}, Confidence: {confidence:.2f}%")
-else:
-    print("No face detected in the image.")
+# if result:
+#     emotion_label, confidence = result
+#     print(f"Emotion: {emotion_label}, Confidence: {confidence:.2f}%")
+# else:
+#     print("No face detected in the image.")
