@@ -122,7 +122,7 @@ const GlowingCirclePattern = () => {
                             }}
                         >
                             <div style={{marginTop:"100px"}}>
-                                <div className="text-white font-black mb-3">LISTEN TUAH</div>
+                                <div className="text-white font-black mb-3">MOOD MELODY</div>
                                 <ScreenAnalyzer setSpinning={setSpinning}/>
                             </div>
                         </div>
