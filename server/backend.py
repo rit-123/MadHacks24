@@ -28,7 +28,7 @@ db1 = conn.cursor()
 
 CLIENT_ID = '2486129522ca4ed8bf027362ebfd60b1'
 CLIENT_SECRET = '76bd17dcb73548d49f7a45c22ab03c96'
-REDIRECT_URI = 'http://127.0.0.1:5000/callback'
+REDIRECT_URI = 'http://localhost:5173/listen'
 
 app.secret_key = 'your_secret_key_here'
 
