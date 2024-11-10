@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import VoiceCommandListener from './voiceCommand';
+import ScreenCapture from './ScreenAnalyzer';
+import ScreenAnalyzer from './ScreenAnalyzer';
 
 const GlowingCirclePattern = () => {
     const blocks = [];
@@ -93,7 +95,7 @@ const GlowingCirclePattern = () => {
             
             <div className="w-full h-screen bg-black flex items-center justify-center">
             <VoiceCommandListener
-      targetWord="play"
+      targetWord="banana"
       onWordDetected={handleWordDetected}
     />
                 <div className="relative w-[700px] h-[700px]">
@@ -165,6 +167,7 @@ const GlowingCirclePattern = () => {
                 <button onClick={handleSpotifyConnect}>
                     Connect Spotify
                 </button>
+                <ScreenAnalyzer />
             </div>
         </>
     );

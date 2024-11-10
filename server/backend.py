@@ -11,6 +11,8 @@ import pyautogui
 import random
 from LLM import classify_screenshot
 from flask_cors import CORS
+from PIL import Image
+import io
 app = Flask(__name__)
 CORS(app)
 # Connect Database
@@ -115,11 +117,14 @@ def callback():
     return access_token #need to return another redirect URL here maybe?
 
 
-@app.route('/screenshot', methods=["GET"])
+@app.route('/screenshot', methods=["POST"])
 def screenshot():
-    screenshot = pyautogui.screenshot()
     try:
-        mood, conf = classify_screenshot(screenshot)
+        data = request.get_json()
+        base64_string = data['imageData'].split(',')[1]  # Remove data URL prefix
+        image_data = base64.b64decode(base64_string)
+        image = Image.open(io.BytesIO(image_data))
+        mood, conf = classify_screenshot(image)
         print(f"the mood is {mood}")
         search(mood)
         return {"status_code":200, "message":""}
