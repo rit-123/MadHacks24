@@ -10,14 +10,11 @@ def classify_screenshot(image_path):
     # Spotify-friendly mood labels that match with activities
     activities = [
         "focus music for studying",
-        "instrumental concentration",
         "gaming music playlist",
         "chill relaxing beats",
-        "upbeat social music",
-        "coding focus music",
+        "social music",
         "ambient background music",
         "peaceful reading music",
-        "study beats"
     ]
     
     # Load and process image
@@ -47,7 +44,7 @@ def classify_screenshot(image_path):
 if __name__ == "__main__":
     try:
         # Replace with your screenshot path
-        image_path = "gaming.jpg"  # Update this to your image path
+        image_path = "study.jpg"  # Update this to your image path
         
         mood, confidence = classify_screenshot(image_path)
         print(f"\nSpotify Mood Label: {mood}")
