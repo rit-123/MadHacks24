@@ -1,13 +1,25 @@
 import React from 'react';
 import SpotifyConnector from './SpotifyConnector';
 import ScreenAnalyzer from './ScreenAnalyzer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams  } from 'react-router-dom';
+import axios from 'axios';
+
 
 const GlowingCirclePattern = () => {
     const blocks = [];
     const totalBlocks = 24;
     const radius = 220;
     const [spinning, setSpinning] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
+    try {
+        const key = searchParams.get('code');
+        try {
+            axios.post('http://localhost:5000/spotify', {code: key});
+        } catch (error) {
+            console.log(error);
+        }
+    } catch (error) {}
 
     for (let i = 0; i < totalBlocks; i++) {
         const angle = (i / totalBlocks) * Math.PI * 2;
@@ -23,6 +35,7 @@ const GlowingCirclePattern = () => {
             size: isGreen ? 32 : 45
         });
     }
+
 
     return (
         <>
