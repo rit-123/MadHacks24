@@ -6,15 +6,24 @@ import MainPage from './MainPage'
 import LoginPage from './Login'
 import RegisterPage from './RegisterPage'
 
-function App() {
-  const [count, setCount] = useState(0)
+import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider } from 'react-router-dom'
 
-  return (
-    <>
-        <LoginPage></LoginPage>
-        <RegisterPage></RegisterPage>
-    </>
-  )
+username = localStorage.getItem('username')
+const router = createBrowserRouter(
+    createRoutesFromElements(
+        username ?
+            <>
+                <Route index element={<MainPage />} />
+            </> :
+            <>
+                <Route index element={<LoginPage />} />
+                <Route path="/about" element={<RegisterPage />} />
+            </>
+    )
+);
+
+const App = () => {
+    return <RouterProvider router={router} />
 }
 
 export default App
