@@ -4,7 +4,9 @@ import { useSearchParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import VoiceCommandListener from './voiceCommand';
 import ScreenCapture from './ScreenAnalyzer';
+import SpotifyConnector from './SpotifyConnector';
 import ScreenAnalyzer from './ScreenAnalyzer';
+import { useState } from 'react';
 
 const GlowingCirclePattern = () => {
     const blocks = [];
@@ -13,6 +15,7 @@ const GlowingCirclePattern = () => {
     const [searchParams] = useSearchParams();
     
 
+    const [spinning, setSpinning] = useState(false);
 
     for (let i = 0; i < totalBlocks; i++) {
         const angle = (i / totalBlocks) * Math.PI * 2;
@@ -29,57 +32,20 @@ const GlowingCirclePattern = () => {
         });
     }
 
-    const handleSpotifyConnect = async () => {
-        try {
-            const response = await axios.get('http://localhost:5000/connect_spotify');
-            const url = response.data.url
-            console.log(url);
-
-            window.location.href = url
-            queryParam = searchParams.get("code");
-            console.log(queryParam)
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    useEffect( () => {
-        
-
-        async function testomg() {
-            const code = searchParams.get('code');
-            if (code) {
-                // console.log('Spotify auth code:', code);
-                // Handle the code here
-                try {
-                    const response = await axios.get('http://localhost:5000/callback');
-                    console.log(response)
-                } catch(e){
-                    console.log(e)
-                }
-            }
-        }
-        testomg()
-    }, [searchParams]);
-
-    const handleWordDetected = async () => {
-        console.log('Target word detected!');
-        try {
-            const response = await fetch('http://localhost:5000/pause');
-            const data = await response.json();
-            console.log('Response from /pause:', data);
-        } catch (error) {
-            console.error('Error calling /pause endpoint:', error);
-        }
-      };
-    
-
     return (
         <>
             <style>
                 {`
           .spin {
-            animation: spin 10s linear infinite;
+            animation: spin 20s linear infinite;
+          }
+          
+          .pulse {
+            animation: pulse 2.5s infinite;
+          }
+          
+          .spin-and-pulse {
+            animation: spin 20s linear infinite, pulse 2.5s  infinite;
           }
           
           @keyframes spin {
@@ -88,6 +54,18 @@ const GlowingCirclePattern = () => {
             }
             to {
               transform: rotate(360deg);
+            }
+          }
+          
+          @keyframes pulse {
+            0% {
+              transform: scale(1) rotate(0deg);
+            }
+            50% {
+              transform: scale(1.1) rotate(180deg);
+            }
+            100% {
+              transform: scale(1) rotate(360deg);
             }
           }
         `}
@@ -99,7 +77,7 @@ const GlowingCirclePattern = () => {
       onWordDetected={handleWordDetected}
     />
                 <div className="relative w-[700px] h-[700px]">
-                    <div className="spin absolute inset-0">
+                    <div className={`${spinning ? 'spin-and-pulse':''} absolute inset-0`}>
                         {blocks.map((block, index) => (
                             <div
                                 key={index}
@@ -139,35 +117,14 @@ const GlowingCirclePattern = () => {
                             }}
                         >
                             <div style={{marginTop:"100px"}}>
-                                <div className="text-white font-black mb-3">LISTEN</div>
-                                <div className="text-white font-black mb-32">TUAH</div>
-                            
-                            <button
-                                className="px-6 py-1.5 text-white bg-black border-2 border-white rounded-lg
-                           transition-transform duration-300 hover:scale-105"
-                                style={{
-                                    fontFamily: 'Arial Black, sans-serif',
-                                    letterSpacing: '0.05em',
-                                    textShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
-                                    boxShadow: `0 0 15px rgba(255, 255, 255, 0.5),
-                             0 0 25px rgba(135, 206, 250, 0.8)`,
-                                    fontSize: '18px',
-                                    position: 'relative',
-                                    background: 'black',
-                                    border: '2px solid white',
-                                    marginBottom: "100px"
-                                }}
-                            >
-                                START
-                            </button>
+                                <div className="text-white font-black mb-3">LISTEN TUAH</div>
+                                <ScreenAnalyzer setSpinning={setSpinning}/>
                             </div>
                         </div>
                     </div>
                 </div>
-                <button onClick={handleSpotifyConnect}>
-                    Connect Spotify
-                </button>
-                <ScreenAnalyzer />
+                
+                
             </div>
         </>
     );
