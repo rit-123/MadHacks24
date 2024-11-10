@@ -22,12 +22,7 @@ const GlowingCirclePattern = () => {
     } catch (error) {}
 
     useEffect(() => {
-        const key = searchParams.get('code');
-        try {
-            axios.post('http://localhost:5000/spotify', {code: key});
-        } catch (error) {
-            console.log(error);
-        }
+        
     }, [searchParams]);
 
     for (let i = 0; i < totalBlocks; i++) {
