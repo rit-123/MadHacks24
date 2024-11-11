@@ -9,8 +9,11 @@ from spotipy.oauth2 import SpotifyOAuth
 from spotifylogic import SpotifyActions
 import pyautogui 
 import random
-from LLM import classify_screenshot
+from LLM import ImageMoodClassifier
 from flask_cors import CORS
+from PIL import Image
+import io
+from emotionanalysis2 import predict_emotion
 app = Flask(__name__)
 CORS(app)
 # Connect Database
@@ -25,10 +28,10 @@ conn = mysql.connector.connect(
 
 )
 db1 = conn.cursor()
-
+llm = ImageMoodClassifier()
 CLIENT_ID = '2486129522ca4ed8bf027362ebfd60b1'
 CLIENT_SECRET = '76bd17dcb73548d49f7a45c22ab03c96'
-REDIRECT_URI = 'http://127.0.0.1:5173/listen'
+REDIRECT_URI = 'http://localhost:5173/listen'
 
 app.secret_key = 'your_secret_key_here'
 
@@ -108,6 +111,7 @@ def index():
 
 @app.route('/callback')
 def callback():
+    print("hit callback")
     code = request.args.get('code')
     token_info = sp_oauth.get_access_token(code)
     access_token = token_info['access_token']
@@ -115,11 +119,21 @@ def callback():
     return access_token #need to return another redirect URL here maybe?
 
 
-@app.route('/screenshot', methods=["GET"])
+@app.route('/screenshot', methods=["POST"])
 def screenshot():
-    screenshot = pyautogui.screenshot()
     try:
-        mood, conf = classify_screenshot(screenshot)
+        data = request.get_json()
+        base64_string = data['screenImageData'].split(',')[1]  # Remove data URL prefix
+        image_data = base64.b64decode(base64_string)
+        image = Image.open(io.BytesIO(image_data))
+
+        face64 = data['cameraImageData'].split(',')[1]
+        fimdata = base64.b64decode(face64)
+        im2 = Image.open(io.BytesIO(fimdata))
+        thingy = predict_emotion(im2)
+        mood, conf = llm.classify(image,thingy)[0]
+        print("conf is ", conf)
+        if conf<15:mood="lo fi beats"
         print(f"the mood is {mood}")
         search(mood)
         return {"status_code":200, "message":""}
@@ -130,10 +144,12 @@ def screenshot():
 def search(mood):
     access_token = spotifyObj.access_token
     if not access_token:
+        print("No access token")
         return jsonify({"error": "Access token missing or expired"}), 400
     query = mode = mood
     # query = body.get("query", "pop") #default to pop
     # mode = body.get("mode", "")
+    print(access_token)
     songs = spotifyObj.getSongs(query=query, mode=mode)
     return jsonify(songs)
 
@@ -142,9 +158,15 @@ def submitScreen():
     requestBody = request.json()
     print(requestBody)
 
-@app.route("/playnext", methods = [""])
-def playSong(sp):
-    pass
+@app.route("/pause", methods = ["GET"])
+def playSong():
+    try:
+        spotifyObj.pauseSong()
+        return {"message": "pass"}, 200
+    except Exception as e:
+        print(e)
+        return {"message":"some fail"}, 400
+    
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,13 +1,32 @@
 import React from 'react';
 import axios from 'axios';
+import { useSearchParams } from 'react-router-dom';
+import VoiceCommandListener from './voiceCommand';
+import ScreenCapture from './ScreenAnalyzer';
 import SpotifyConnector from './SpotifyConnector';
 import ScreenAnalyzer from './ScreenAnalyzer';
-import StartButton from './StartButton';
+import { useState, useEffect } from 'react';
+
 
 const GlowingCirclePattern = () => {
     const blocks = [];
     const totalBlocks = 24;
-    const radius = 220;
+    const radius = 220;    
+
+    const [spinning, setSpinning] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
+    try {
+        const key = searchParams.get('code');
+        try {
+            axios.get('http://localhost:5000/callback', {code: key});
+        } catch (error) {
+            console.log(error);
+        }
+    } catch (error) {}
+
+    useEffect(() => {
+        
+    }, [searchParams]);
 
     for (let i = 0; i < totalBlocks; i++) {
         const angle = (i / totalBlocks) * Math.PI * 2;
@@ -24,14 +43,21 @@ const GlowingCirclePattern = () => {
         });
     }
 
-   
 
     return (
         <>
             <style>
                 {`
           .spin {
-            animation: spin 10s linear infinite;
+            animation: spin 20s linear infinite;
+          }
+          
+          .pulse {
+            animation: pulse 2.5s infinite;
+          }
+          
+          .spin-and-pulse {
+            animation: spin 20s linear infinite, pulse 2.5s  infinite;
           }
           
           @keyframes spin {
@@ -42,12 +68,24 @@ const GlowingCirclePattern = () => {
               transform: rotate(360deg);
             }
           }
+          
+          @keyframes pulse {
+            0% {
+              transform: scale(1) rotate(0deg);
+            }
+            50% {
+              transform: scale(1.1) rotate(180deg);
+            }
+            100% {
+              transform: scale(1) rotate(360deg);
+            }
+          }
         `}
             </style>
-
+            
             <div className="w-full h-screen bg-black flex items-center justify-center">
                 <div className="relative w-[700px] h-[700px]">
-                    <div className="spin absolute inset-0">
+                    <div className={`${spinning ? 'spin-and-pulse':''} absolute inset-0`}>
                         {blocks.map((block, index) => (
                             <div
                                 key={index}
@@ -88,14 +126,12 @@ const GlowingCirclePattern = () => {
                         >
                             <div style={{marginTop:"100px"}}>
                                 <div className="text-white font-black mb-3">LISTEN TUAH</div>
-                        
-                                <ScreenAnalyzer />
+                                <ScreenAnalyzer setSpinning={setSpinning}/>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <SpotifyConnector />
                 
             </div>
         </>
