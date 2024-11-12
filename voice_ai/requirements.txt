@@ -1,0 +1,4 @@
+spotipy
+SpeechRecognition
+python-dotenv
+requests
